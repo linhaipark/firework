@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<!--@author:林海
+    @date:2019-10-15
+-->
+<html lang="zh">
+<!--<style>-->
+<!--*{-->
+<!--  padding: 0px;-->
+<!--  margin: 0px;-->
+<!--  background: #111;-->
+<!--}-->
+<!--</style>-->
+<head>
+<script>
+//母节点从底部随机位置,以随机速度竖直向上,到一定高度（随机）爆炸,产生n个子节点,
+//子节点从该位置随机以不同的速度和方向迸射出去,呈抛物运动
+var momDiv = [];         //母节点数组
+var childDiv = [];       //子节点数组
+var i = 0;               //循环变量
+var j = 0;               //循环变量
+var childNum = 40;       //每个烟花子节点数量
+var timeToCreate = 300;  //多久创建一个烟花, 单位毫秒
+//产生随机颜色
+function randomColor(){
+  var myColor = '#'+Math.ceil(Math.random()*0xEFFFFF+0x0FFFFF).toString(16);
+  return myColor;
+}
+/**/
+function showFireWorks(){
+    setInterval(show, timeToCreate);      //开始放烟花
+    setInterval(momMove, 30);             //母节点的运动
+    setInterval(childMove, 30);           //子节点的运动
+}
+//*/
+//创建烟花母节点
+//参数:坐标,颜色,速度(只有垂直速度)
+function createMom(x, y, aColor, speedY){
+    var _momDiv = document.createElement('div');
+    _momDiv.style.position = 'absolute';
+    _momDiv.style.background = aColor;
+    _momDiv.style.width = '4px';
+    _momDiv.style.height = '5px';
+    _momDiv.style.left = x + 'px';
+    _momDiv.style.top = y + 'px';
+    _momDiv.speedX = 0;
+    _momDiv.speedY = speedY;
+    _momDiv.highest = Math.ceil(Math.random()*document.documentElement.clientHeight/3);   //爆炸高度
+    document.body.appendChild(_momDiv);
+    momDiv.push(_momDiv);
+}
+//创建烟花子节点
+//参数:坐标,颜色
+function createChild(x, y, aColor){
+    var _childDiv = document.createElement('div');
+    _childDiv.style.position = 'absolute';
+    _childDiv.style.background = aColor;
+    _childDiv.style.width = '3px';
+    _childDiv.style.height = '3px';
+    _childDiv.style.left = x + 'px';
+    _childDiv.style.top = y + 'px';
+    var a = Math.random()*360;                                                 //产生随机角度
+    _childDiv.speedX = Math.cos(a*180/Math.PI)*20*Math.random();
+    _childDiv.speedY = Math.sin(a*180/Math.PI)*20*Math.random();
+    document.body.appendChild(_childDiv);
+    childDiv.push(_childDiv);
+}
+//开始放烟花,调用方法创建母节点
+function show(){
+    var x = Math.ceil(document.documentElement.clientWidth * Math.random());
+    var y = document.documentElement.clientHeight-5;
+    var speedY = 5 * Math.random() + 15;
+    createMom(x, y, randomColor(), speedY);
+}
+//母节点移动的方法
+function momMove(){
+    for(i=0; i<momDiv.length; i++){
+        momDiv[i].style.top = momDiv[i].offsetTop - momDiv[i].speedY + 'px';
+        if(momDiv[i].offsetTop<=momDiv[i].highest){
+            for(j=0; j<childNum; j++){
+                createChild(momDiv[i].offsetLeft, momDiv[i].offsetTop, momDiv[i].style.background);
+            }
+            document.body.removeChild(momDiv[i]);
+            momDiv.splice(i, 1);
+        }
+    }
+}
+//子节点移动的方法
+function childMove(){
+    for(i=0; i<childDiv.length; i++){
+        childDiv[i].style.left = childDiv[i].offsetLeft + childDiv[i].speedX + 'px';
+        childDiv[i].style.top = childDiv[i].offsetTop - childDiv[i].speedY + 'px';
+        //加速度暂定为1
+        childDiv[i].speedY --;
+        //若超出边界则删除该节点
+        if(childDiv[i].offsetLeft<5 || childDiv[i].offsetLeft>document.documentElement.clientWidth-5 ||
+            childDiv[i].offsetTop>document.documentElement.clientHeight-5){
+            document.body.removeChild(childDiv[i]);
+            childDiv.splice(i, 1);
+        }
+    }
+}
+</script>
+</head>
+<body onload="showFireWorks()" background="background.jpg"
+      style=" background-repeat:no-repeat;background-size:100% 100%; background-attachment: fixed;" >
+</body>
+</html>
